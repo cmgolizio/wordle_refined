@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 
+import { fetchRandomWord, validateWord } from "../utils/wordApi";
+
 const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
@@ -9,32 +11,46 @@ export const GameProvider = ({ children }) => {
   const [isGameOver, setIsGameOver] = useState(false);
   const [isWinner, setIsWinner] = useState(null);
 
-  const fetchWord = async () => {
-    // get word from api
-    setWord("TRUCK"); // hardcoded example
-  };
-
   useEffect(() => {
-    fetchWord();
+    const initializeGame = async () => {
+      const newWord = await fetchRandomWord();
+      if (newWord) setWord(newWord.toUpperCase());
+    };
+    initializeGame();
   }, []);
 
-  const handleGuess = () => {
+  // Handle backspace to remove the last letter
+  const handleBackspace = () => {
+    if (currentGuess.length > 0 && !isGameOver) {
+      setCurrentGuess((prev) => prev.slice(0, -1));
+    }
+  };
+
+  // Submit the current guess
+  const handleGuess = async () => {
     if (currentGuess.length === word.length) {
+      const isValid = await validateWord(currentGuess);
+      if (!isValid) {
+        alert("Not a valid word. Try again.");
+        return;
+      }
+
       setGuesses([...guesses, currentGuess]);
+
       if (currentGuess === word) {
-        setIsWinner(true);
-        setIsGameOver(true);
+        setTimeout(() => {
+          setIsWinner(true);
+          setIsGameOver(true);
+        }, 4500);
       }
-      if (guesses.length === 5) {
-        setIsGameOver(true);
-        setIsWinner(false);
-      }
+
       setCurrentGuess("");
     }
   };
 
+  // Handle typing letters into the current guess
   const handleInput = (letter) => {
-    if (currentGuess.length < word.length) {
+    if (currentGuess.length < word.length && !isGameOver) {
       setCurrentGuess((prev) => prev + letter);
     }
   };
@@ -43,22 +59,18 @@ export const GameProvider = ({ children }) => {
     setGuesses([]);
     setCurrentGuess("");
     setIsGameOver(false);
-    // Fetch new word
-    fetchWord();
+    setWord("");
   };
 
   const values = {
     word,
-    // setWord,
     guesses,
-    // setGuesses,
     currentGuess,
-    // setCurrentGuess,
     isGameOver,
-    // setIsGameOver,
     isWinner,
     handleGuess,
     handleInput,
+    handleBackspace,
     resetGame,
   };
   return <GameContext.Provider value={values}>{children}</GameContext.Provider>;

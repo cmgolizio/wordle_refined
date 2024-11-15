@@ -1,6 +1,6 @@
 // components/Modal.js
 import React, { useContext } from "react";
-import GameContext from "../contexts/GameContext";
+import GameContext from "../context/GameContext";
 
 const Modal = () => {
   const { isGameOver, isWinner, word, resetGame } = useContext(GameContext);

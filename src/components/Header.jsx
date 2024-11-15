@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 
-import GameContext from "../contexts/GameContext";
+import GameContext from "../context/GameContext";
 
 const Header = () => {
   const { resetGame } = useContext(GameContext);
