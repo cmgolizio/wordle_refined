@@ -2,20 +2,48 @@ import React, { createContext, useState, useEffect } from "react";
 
 import { fetchRandomWord, validateWord } from "../utils/wordApi";
 
-const GameContext = createContext();
+const GameContext = createContext("");
 
 export const GameProvider = ({ children }) => {
   const [word, setWord] = useState("");
   const [guesses, setGuesses] = useState([]);
   const [currentGuess, setCurrentGuess] = useState("");
   const [isGameOver, setIsGameOver] = useState(false);
-  const [isWinner, setIsWinner] = useState(null);
+  const [isWinner, setIsWinner] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeGame = async () => {
-      const newWord = await fetchRandomWord();
-      if (newWord) setWord(newWord.toUpperCase());
-    };
+    console.log("WORD: ", word);
+    console.log("LOADING: ", loading);
+  }, [word, loading]);
+
+  const initializeGame = async () => {
+    setLoading(true); // Start the loading indicator
+    try {
+      let newWord = null;
+      let isValid = false;
+
+      // Keep fetching until a valid word is found
+      while (!isValid) {
+        newWord = await fetchRandomWord();
+        if (newWord) {
+          isValid = await validateWord(newWord); // Validate the word
+        }
+      }
+
+      setWord(newWord.toUpperCase()); // Set the valid word
+      setGuesses([]); // Clear previous guesses
+      setCurrentGuess("");
+      setIsGameOver(false);
+      setIsWinner(false);
+    } catch (error) {
+      console.error("Error initializing game:", error);
+    } finally {
+      setLoading(false); // Ensure loading is stopped
+    }
+  };
+
+  useEffect(() => {
     initializeGame();
   }, []);
 
@@ -41,7 +69,7 @@ export const GameProvider = ({ children }) => {
         setTimeout(() => {
           setIsWinner(true);
           setIsGameOver(true);
-        }, 4500);
+        }, 600);
       }
 
       setCurrentGuess("");
@@ -55,23 +83,17 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  const resetGame = () => {
-    setGuesses([]);
-    setCurrentGuess("");
-    setIsGameOver(false);
-    setWord("");
-  };
-
   const values = {
     word,
     guesses,
     currentGuess,
     isGameOver,
     isWinner,
+    loading,
     handleGuess,
     handleInput,
     handleBackspace,
-    resetGame,
+    initializeGame,
   };
   return <GameContext.Provider value={values}>{children}</GameContext.Provider>;
 };

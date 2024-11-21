@@ -3,7 +3,8 @@ import React, { useContext } from "react";
 import GameContext from "../context/GameContext";
 
 const Modal = () => {
-  const { isGameOver, isWinner, word, resetGame } = useContext(GameContext);
+  const { isGameOver, isWinner, word, initializeGame } =
+    useContext(GameContext);
 
   if (!isGameOver) return null;
 
@@ -17,7 +18,7 @@ const Modal = () => {
               The word was: <span className='font-bold'>{word}</span>
             </p>
             <button
-              onClick={resetGame}
+              onClick={initializeGame}
               className='px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white'
             >
               Play Again
@@ -27,7 +28,7 @@ const Modal = () => {
           <>
             <h2 className='text-2xl font-bold mb-4'>YOU WIN!</h2>
             <button
-              onClick={resetGame}
+              onClick={initializeGame}
               className='px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded text-white'
             >
               Play Again
